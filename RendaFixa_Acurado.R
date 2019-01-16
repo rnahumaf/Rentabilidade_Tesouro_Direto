@@ -1,7 +1,7 @@
 # Ctrl + Shift + S PREVENTS SHOWING EACH COMMAND IN THE OUTPUT
 
 
-# Funções
+# FunÃ§Ãµes
 Day <- function(x)
 {
   format(as.Date(x, format="%Y-%m-%d"), "%d")
@@ -37,7 +37,7 @@ Add_Row <- function(x)
   x <- rbind(x, Tabela_Rendimentos[1,])
 }
 
-# Variáveis estabelecidas pelo usuário
+# VariÃ¡veis estabelecidas pelo usuÃ¡rio
 inicial <- as.Date("15-01-19", format="%d-%m-%y")
 final   <- as.Date("01-03-23", format="%d-%m-%y")
 
@@ -55,7 +55,7 @@ Dia_do_Deposito <- 1
 Tem_IOF <- TRUE
 Tem_IR <- TRUE
 
-# Cálculo do rendimento bruto, incluindo custódias automáticas
+# CÃ¡lculo do rendimento bruto, incluindo custÃ³dias automÃ¡ticas
 1 -> i # dias
 0 -> Ultima_Custodia
 0 -> Custodia_Total
@@ -65,7 +65,7 @@ Montante <- Montante_Inicial
 while(inicial <= final)
 {
   
-  # O primeiro dia não rende
+  # O primeiro dia nÃ£o rende
   if(i == 1) 
   {
     Tabela_Rendimentos$Data[i] <- inicial
@@ -78,14 +78,14 @@ while(inicial <= final)
     next 
   }
   
-  # Rendimento diário
+  # Rendimento diÃ¡rio
    for(k in 1:nrow(Tabela_Rendimentos))
    {
      Tabela_Rendimentos$Lucro[k] <- Tabela_Rendimentos$Lucro[k] + Tabela_Rendimentos$Valor[k]*Rendimento_D
      Tabela_Rendimentos$Valor[k] <- Tabela_Rendimentos$Valor[k] + Tabela_Rendimentos$Valor[k]*Rendimento_D
    }
 
-  # Checar se é dia e mês de custódia, descontar se > 10
+  # Checar se Ã© dia e mÃªs de custÃ³dia, descontar se > 10
   if(Tem_Custodia){
   if(Day(inicial) == "01")
   {
@@ -96,7 +96,7 @@ while(inicial <= final)
         Tabela_Rendimentos$Custodia[k] <- Tabela_Rendimentos$Custodia[k] + Tabela_Rendimentos$Valor[k]*Cust_Semestral
       }
       
-      # Guarda a data da última custódia
+      # Guarda a data da Ãºltima custÃ³dia
       Ultima_Custodia <- inicial
       
       if(sum(Tabela_Rendimentos$Custodia) >= 10)
@@ -113,7 +113,7 @@ while(inicial <= final)
   }
   }
   
-  # Checar se é dia de depósito, para adição mensal
+  # Checar se Ã© dia de depÃ³sito, para adiÃ§Ã£o mensal
   if(Tem_Deposito_Mensal){
   if(Day(inicial) == "01")
     {
@@ -130,7 +130,7 @@ while(inicial <= final)
   }
   }
   
-  # Se for o último dia, cobra o restante da custódia, mais o proporcional até a data, e finaliza
+  # Se for o Ãºltimo dia, cobra o restante da custÃ³dia, mais o proporcional atÃ© a data, e finaliza
   if(inicial == final)
   {
     Custodia_Total <- Custodia_Total + sum(Tabela_Rendimentos$Custodia) + sum(Tabela_Rendimentos$Valor)*(1.0025^(as.numeric(final-Ultima_Custodia)/365)-1)
@@ -147,7 +147,7 @@ while(inicial <= final)
   next
 }
 
-# Cobrar IOF, caso o número de dias seja inferior a 30
+# Cobrar IOF, caso o nÃºmero de dias seja inferior a 30
 if(Tem_IOF)
 {
   IOF_tabela <- as.numeric(paste0(rep(seq(0.90, 0, -0.1), each=3) + rep(c(0.06,0.03,0), 10)))
@@ -165,8 +165,8 @@ if(Tem_IOF)
 }
 
 
-# Cobrar IR nos diferentes montantes, segundo seus períodos se rendimento
-# Cálculo do IR devido
+# Cobrar IR nos diferentes montantes, segundo seus perÃ­odos se rendimento
+# CÃ¡lculo do IR devido
 IR_Total <- 0
 if(Tem_IR)
   {
@@ -183,11 +183,11 @@ print(paste0("Dias de rendimento: ", final - Tabela_Rendimentos$Data[1]))
 print(paste0("Montante: ", sum(Tabela_Rendimentos$Valor) - IR_Total))
 print(paste0("Depositado: ", sum(Tabela_Rendimentos$Valor) - sum(Tabela_Rendimentos$Lucro)))
 print(paste0("Lucro: ", sum(Tabela_Rendimentos$Lucro) - IR_Total))
-print(paste0("Custódia Total: ", Custodia_Total))
+print(paste0("CustÃ³dia Total: ", Custodia_Total))
 print(paste0("IOF: ", IOF))
 print(paste0("Imposto de Renda: ", IR_Total))
-print(paste0("Rendimento anual médio total: ", (((sum(Tabela_Rendimentos$Lucro) - IR_Total)/(sum(Tabela_Rendimentos$Valor) - sum(Tabela_Rendimentos$Lucro)))+1)^(365/as.numeric(final - Tabela_Rendimentos$Data[1])) - 1 ))
-print(paste0("Rendimento anual médio do título mais antigo: ", (Tabela_Rendimentos$Lucro[1]*0.85/(Tabela_Rendimentos$Valor[1] - Tabela_Rendimentos$Lucro[1]) + 1)^(365/as.numeric(final - Tabela_Rendimentos$Data[1])) - 1 ))
+print(paste0("Rendimento anual mÃ©dio total: ", (((sum(Tabela_Rendimentos$Lucro) - IR_Total)/(sum(Tabela_Rendimentos$Valor) - sum(Tabela_Rendimentos$Lucro)))+1)^(365/as.numeric(final - Tabela_Rendimentos$Data[1])) - 1 ))
+print(paste0("Rendimento anual mÃ©dio do tÃ­tulo mais antigo: ", (Tabela_Rendimentos$Lucro[1]*0.85/(Tabela_Rendimentos$Valor[1] - Tabela_Rendimentos$Lucro[1]) + 1)^(365/as.numeric(final - Tabela_Rendimentos$Data[1])) - 1 ))
                                                             
 
 
