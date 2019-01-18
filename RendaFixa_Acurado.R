@@ -38,8 +38,8 @@ Add_Row <- function(x)
 }
 
 # Variáveis estabelecidas pelo usuário
-inicial <- as.Date("15-01-19", format="%d-%m-%y")
-final   <- as.Date("01-03-23", format="%d-%m-%y")
+inicial <- as.Date("29-01-19", format="%d-%m-%y")
+final   <- as.Date("02-02-29", format="%d-%m-%y")
 
 Montante_Inicial <- 1000 # Aporte inicial
 Rendimento_D <- Rendimento_A(0.065) # 6,5% anual
@@ -57,10 +57,11 @@ Tem_IR <- TRUE
 
 # Cálculo do rendimento bruto, incluindo custódias automáticas
 1 -> i # dias
-0 -> Ultima_Custodia
+inicial -> Ultima_Custodia
 0 -> Custodia_Total
 Tabela_Rendimentos <- data.frame(Data = as.Date("01-01-01", format="%d-%m-%y"), Inicial = c(0), Valor = c(0), Lucro = c(0), Custodia = c(0))
 Montante <- Montante_Inicial
+FALSE -> error # Mensagem de erro caso o último depósito fosse feito no dia do resgate
 
 while(inicial <= final)
 {
@@ -119,6 +120,7 @@ while(inicial <= final)
     {
     if(inicial == final)
       {
+      error <- TRUE
       break
     }
     Tabela_Rendimentos <- Add_Row(Tabela_Rendimentos)
@@ -143,23 +145,25 @@ while(inicial <= final)
     }
   }
   inicial <- inicial + 1
-  i = i + 1
+  #i = i + 1
   next
 }
 
+0 -> IOF
 # Cobrar IOF, caso o número de dias seja inferior a 30
 if(Tem_IOF)
 {
   IOF_tabela <- as.numeric(paste0(rep(seq(0.90, 0, -0.1), each=3) + rep(c(0.06,0.03,0), 10)))
-  0 -> IOF
   
   for(k in 1:nrow(Tabela_Rendimentos))
   {
     if(final - Tabela_Rendimentos$Data[k] <= 30)
     {
-      IOF <- IOF + Tabela_Rendimentos$Lucro[k] * IOF_tabela[final - Tabela_Rendimentos$Data[k]]
-      Tabela_Rendimentos$Lucro[k] <- Tabela_Rendimentos$Lucro[k] - Tabela_Rendimentos$Lucro[k] * IOF_tabela[final - Tabela_Rendimentos$Data[k]]
-      Tabela_Rendimentos$Valor[k] <- Tabela_Rendimentos$Valor[k] - Tabela_Rendimentos$Lucro[k] * IOF_tabela[final - Tabela_Rendimentos$Data[k]]
+      # IOF_linha criado para armazenar temporariamente o IOF a cada iteração
+      IOF_linha <- Tabela_Rendimentos$Lucro[k] * IOF_tabela[final - Tabela_Rendimentos$Data[k]]
+      IOF <- IOF + IOF_linha
+      Tabela_Rendimentos$Lucro[k] <- Tabela_Rendimentos$Lucro[k] - IOF_linha
+      Tabela_Rendimentos$Valor[k] <- Tabela_Rendimentos$Valor[k] - IOF_linha
     }
   }
 }
@@ -176,19 +180,27 @@ if(Tem_IR)
   IR_175 <- sum(Tabela_Rendimentos$Lucro[b < 721 & b >= 361])
   IR_15 <- sum(Tabela_Rendimentos$Lucro[b >= 721])
   IR_Total <- IR_225*0.225 + IR_20*0.2 + IR_175*0.175 + IR_15*0.15
+} else {
+  b <- 0
+  IR_225 <- 0
+  IR_20 <- 0
+  IR_175 <- 0
+  IR_15 <- 0
 }
 
 # Extrato Final
 print(paste0("Dias de rendimento: ", final - Tabela_Rendimentos$Data[1]))
-print(paste0("Montante: ", sum(Tabela_Rendimentos$Valor) - IR_Total))
+print(paste0("Montante Líquido: ", sum(Tabela_Rendimentos$Valor) - IR_Total))
 print(paste0("Depositado: ", sum(Tabela_Rendimentos$Valor) - sum(Tabela_Rendimentos$Lucro)))
-print(paste0("Lucro: ", sum(Tabela_Rendimentos$Lucro) - IR_Total))
+if(error == T){print(paste0("O último depósito de ", Deposito_Mensal, " reais não foi computado, por ocorrer no dia do resgate."))}
+print(paste0("Lucro Líquido: ", sum(Tabela_Rendimentos$Lucro) - IR_Total))
 print(paste0("Custódia Total: ", Custodia_Total))
 print(paste0("IOF: ", IOF))
 print(paste0("Imposto de Renda: ", IR_Total))
-print(paste0("Rendimento anual médio total: ", (((sum(Tabela_Rendimentos$Lucro) - IR_Total)/(sum(Tabela_Rendimentos$Valor) - sum(Tabela_Rendimentos$Lucro)))+1)^(365/as.numeric(final - Tabela_Rendimentos$Data[1])) - 1 ))
-print(paste0("Rendimento anual médio do título mais antigo: ", (Tabela_Rendimentos$Lucro[1]*0.85/(Tabela_Rendimentos$Valor[1] - Tabela_Rendimentos$Lucro[1]) + 1)^(365/as.numeric(final - Tabela_Rendimentos$Data[1])) - 1 ))
-                                                            
+print(paste0("Rendimento (liq) anual médio total: ", (((sum(Tabela_Rendimentos$Lucro) - IR_Total)/(sum(Tabela_Rendimentos$Valor) - sum(Tabela_Rendimentos$Lucro)))+1)^(365/as.numeric(final - Tabela_Rendimentos$Data[1])) - 1 ))
+print(paste0("Rendimento (liq) anual médio do título mais antigo: ", (Tabela_Rendimentos$Lucro[1]*0.85/(Tabela_Rendimentos$Valor[1] - Tabela_Rendimentos$Lucro[1]) + 1)^(365/as.numeric(final - Tabela_Rendimentos$Data[1])) - 1 ))
+if(Tem_IR){print(paste0("Valor que pode ser retirado mensalmente: ", 0.85*((1+Rendimento_D)^(365/12)-1)*sum(Tabela_Rendimentos$Valor)))}
+if(Tem_IR==F){print(paste0("Valor que pode ser retirado mensalmente: ", ((1+Rendimento_D)^(365/12)-1)*sum(Tabela_Rendimentos$Valor)))}
 
 
 
