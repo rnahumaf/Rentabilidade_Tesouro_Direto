@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+<p> Para que este programa funcione, é necessário que o javascript esteja ativado no seu Browser. </p>
+<span> Neste momento, o javascript está: </span> <b> <span id="a">DESATIVADO. </span> </b> <br><br><br>
+
+<span> Depósito inicial: </span> <input id="depositoinicial" value="0" onkeyup="lucro()"> <br>
+<span> Depósito mensal: </span> <input id="depositomensal" value="0" onkeyup="lucro()"> <br>
+<span> Tempo (anos): </span> <input id="anos" value="1" onkeyup="lucro()"> <br>
+<span> Juros a.a. (%): </span> <input id="juros" value="8" onkeyup="lucro()"> <br> <br>
+
+<span> O total acumulado (líquido) será: R$</span> <span id="res_liquido"></span> <br>
+<span> O total depositado será: R$</span> <span id="res_depositado"></span> <br>
+<span> O lucro total será: R$</span> <span id="res_lucro"></span> <br>
+
+<script>
+	function lucro(){
+		var depositoinicial = document.getElementById("depositoinicial").value;
+		var depositomensal = document.getElementById("depositomensal").value;
+		var anos = document.getElementById("anos").value;
+		var juros = document.getElementById("juros").value;
+		var i, IR, renda, lucroliq, lucrobruto, liquido, meses, acumulado, fatorjuros, depositado;
+
+		fatorjuros = parseFloat(juros)/100 + 1;
+		fatormensal = Math.pow(fatorjuros, 1/12)-1;
+		meses = anos*12;
+		acumulado = depositoinicial;
+		
+		//alert(acumulado-1);
+
+		for(i = 1; i <= parseFloat(meses); i++){
+			renda = acumulado*fatormensal;
+			acumulado = parseFloat(acumulado) + parseFloat(renda) + parseFloat(depositomensal);	
+		};
+		
+		depositado = parseFloat(depositoinicial)+depositomensal*meses;
+		lucrobruto = acumulado-depositado;
+		IR = lucrobruto*0.15;
+		liquido = acumulado-IR;
+		lucroliq = liquido-depositado;
+
+		res_liquido.textContent=liquido.toFixed(2);
+		res_depositado.textContent=depositado.toFixed(2);
+		res_lucro.textContent=lucroliq.toFixed(2);
+	}
+</script>
+
+<script>
+	window.onload = function() {
+				var t = "ATIVADO.";  
+				a.textContent=t;
+			};
+</script>
+
+
+
+
+
+
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<script>
+$(document).ready(function(){
+  $("button#butt").click(function(){
+    $("#div1").load("http://api.sidra.ibge.gov.br/values/t/1419/n1/all/h/n/v/69/p/last%201?formato=json", function(data) {
+        var json = data, obj = JSON.parse(json);
+        $("#div1").text(obj[0].V);
+    });
+  });
+});
+</script>
+
+
+<div id='div1'></div>
+<button id="butt">Mostrar o IPCA do ano</button>
+    
+    
+<script>
+$(document).ready(function(){
+  $("button#butt2").click(function(){
+      $("#div2").load("http://api.sidra.ibge.gov.br/values/t/1419/n1/all/h/n/v/63/p/last%201?formato=json", function(data) {
+        var json = data, obj = JSON.parse(json);
+        $("#div2").text(obj[0].V);
+    });
+  });
+});
+</script>
+
+
+<div id='div2'></div>
+<button id="butt2">Mostrar o IPCA do mês</button>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+</head>
+</html>
